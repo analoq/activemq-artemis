@@ -116,7 +116,22 @@ public class URIParserTest {
       query.put("key2", "value2");
       queryString = URISupport.createQueryString(query);
       Assert.assertEquals("key1=value1&key2=value2&key3=value3", queryString);
+   }
 
+   @Test
+   public void testQueryConversionSpecial() throws Exception {
+      Map<String, String> query = new HashMap<>();
+      String queryString = URISupport.createQueryString(query);
+      query.put("key1", "val&ue");
+      query.put("key2", "val?ue");
+      query.put("key3", "val=ue");
+      queryString = URISupport.createQueryString(query);
+      Assert.assertEquals("key1=val%26ue&key2=val%3Fue&key3=val%3Due", queryString);
+      query.clear();
+      query.put("ke#y", "value");
+      query.put("ke%y", "value");
+      queryString = URISupport.createQueryString(query);
+      Assert.assertEquals("ke%23y=value&ke%25y=value", queryString);
    }
 
    class FruitParser extends URIFactory<FruitBase, String> {
