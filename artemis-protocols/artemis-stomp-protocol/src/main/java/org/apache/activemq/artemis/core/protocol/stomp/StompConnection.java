@@ -54,6 +54,7 @@ import org.apache.activemq.artemis.spi.core.protocol.RemotingConnection;
 import org.apache.activemq.artemis.spi.core.remoting.Acceptor;
 import org.apache.activemq.artemis.spi.core.remoting.Connection;
 import org.apache.activemq.artemis.spi.core.remoting.ReadyListener;
+import org.apache.activemq.artemis.utils.CompositeAddress;
 import org.apache.activemq.artemis.utils.ConfigurationHelper;
 import org.apache.activemq.artemis.utils.ExecutorFactory;
 import org.apache.activemq.artemis.utils.VersionLoader;
@@ -114,6 +115,7 @@ public final class StompConnection implements RemotingConnection {
    private final ScheduledExecutorService scheduledExecutorService;
 
    private final ExecutorFactory executorFactory;
+   private Subject subject;
 
    @Override
    public boolean isSupportReconnect() {
@@ -274,20 +276,20 @@ public final class StompConnection implements RemotingConnection {
       }
    }
 
-   public void autoCreateDestinationIfPossible(String queue, RoutingType routingType) throws ActiveMQStompException {
+   public void autoCreateDestinationIfPossible(String destination, RoutingType routingType) throws ActiveMQStompException {
       try {
-         ServerSession session = getSession().getCoreSession();
-         SimpleString simpleQueue = SimpleString.toSimpleString(queue);
-         AddressInfo addressInfo = manager.getServer().getAddressInfo(simpleQueue);
-         AddressSettings addressSettings = manager.getServer().getAddressSettingsRepository().getMatch(queue);
+         SimpleString simpleDestination = SimpleString.toSimpleString(destination);
+         AddressInfo addressInfo = manager.getServer().getAddressInfo(simpleDestination);
+         AddressSettings addressSettings = manager.getServer().getAddressSettingsRepository().getMatch(destination);
          RoutingType effectiveAddressRoutingType = routingType == null ? addressSettings.getDefaultAddressRoutingType() : routingType;
+         ServerSession session = getSession().getCoreSession();
          /**
           * If the address doesn't exist then it is created if possible.
           * If the address does exist but doesn't support the routing-type then the address is updated if possible.
           */
          if (addressInfo == null) {
             if (addressSettings.isAutoCreateAddresses()) {
-               session.createAddress(simpleQueue, effectiveAddressRoutingType, true);
+               session.createAddress(simpleDestination, effectiveAddressRoutingType, true);
             }
          } else if (!addressInfo.getRoutingTypes().contains(effectiveAddressRoutingType)) {
             if (addressSettings.isAutoCreateAddresses()) {
@@ -296,13 +298,13 @@ public final class StompConnection implements RemotingConnection {
                   routingTypes.add(existingRoutingType);
                }
                routingTypes.add(effectiveAddressRoutingType);
-               manager.getServer().updateAddressInfo(simpleQueue, routingTypes);
+               manager.getServer().updateAddressInfo(simpleDestination, routingTypes);
             }
          }
 
-         // only auto create the queue if the address is ANYCAST
-         if (effectiveAddressRoutingType == RoutingType.ANYCAST && addressSettings.isAutoCreateQueues() && manager.getServer().locateQueue(simpleQueue) == null) {
-            session.createQueue(new QueueConfiguration(simpleQueue).setRoutingType(effectiveAddressRoutingType).setAutoCreated(true));
+         // auto create the queue if the address is ANYCAST or FQQN
+         if ((CompositeAddress.isFullyQualified(destination) || effectiveAddressRoutingType == RoutingType.ANYCAST) && addressSettings.isAutoCreateQueues() && manager.getServer().locateQueue(simpleDestination) == null) {
+            session.createQueue(new QueueConfiguration(destination).setRoutingType(effectiveAddressRoutingType).setAutoCreated(true));
          }
       } catch (ActiveMQQueueExistsException e) {
          // ignore
@@ -852,6 +854,16 @@ public final class StompConnection implements RemotingConnection {
    @Override
    public boolean isSupportsFlowControl() {
       return false;
+   }
+
+   @Override
+   public void setAuditSubject(Subject subject) {
+      this.subject = subject;
+   }
+
+   @Override
+   public Subject getAuditSubject() {
+      return subject;
    }
 
    @Override

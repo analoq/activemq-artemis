@@ -80,6 +80,7 @@ import org.apache.activemq.artemis.core.transaction.ResourceManager;
 import org.apache.activemq.artemis.core.transaction.Transaction;
 import org.apache.activemq.artemis.core.transaction.TransactionOperationAbstract;
 import org.apache.activemq.artemis.core.transaction.TransactionPropertyIndexes;
+import org.apache.activemq.artemis.logs.AuditLogger;
 import org.apache.activemq.artemis.spi.core.protocol.AbstractRemotingConnection;
 import org.apache.activemq.artemis.spi.core.protocol.ConnectionEntry;
 import org.apache.activemq.artemis.spi.core.remoting.Connection;
@@ -237,6 +238,12 @@ public class OpenWireConnection extends AbstractRemotingConnection implements Se
 
    // SecurityAuth implementation
    @Override
+   public String getSecurityDomain() {
+      return protocolManager.getSecurityDomain();
+   }
+
+   // SecurityAuth implementation
+   @Override
    public String getPassword() {
       ConnectionInfo info = getConnectionInfo();
       if (info == null) {
@@ -298,6 +305,10 @@ public class OpenWireConnection extends AbstractRemotingConnection implements Se
    private void act(Command command) {
       try {
          recoverOperationContext();
+
+         if (AuditLogger.isAnyLoggingEnabled()) {
+            AuditLogger.setRemoteAddress(getRemoteAddress());
+         }
 
          boolean responseRequired = command.isResponseRequired();
          int commandId = command.getCommandId();
@@ -759,7 +770,7 @@ public class OpenWireConnection extends AbstractRemotingConnection implements Se
    }
 
    private void createInternalSession(ConnectionInfo info) throws Exception {
-      internalSession = server.createSession(UUIDGenerator.getInstance().generateStringUUID(), context.getUserName(), info.getPassword(), -1, this, true, false, false, false, null, null, true, operationContext, protocolManager.getPrefixes());
+      internalSession = server.createSession(UUIDGenerator.getInstance().generateStringUUID(), context.getUserName(), info.getPassword(), -1, this, true, false, false, false, null, null, true, operationContext, protocolManager.getPrefixes(), protocolManager.getSecurityDomain());
    }
 
    //raise the refCount of context
@@ -1703,7 +1714,7 @@ public class OpenWireConnection extends AbstractRemotingConnection implements Se
 
    }
 
-   private void recoverOperationContext() {
+   private void   recoverOperationContext() {
       server.getStorageManager().setContext(this.operationContext);
    }
 

@@ -48,6 +48,7 @@ import org.apache.activemq.artemis.core.server.ServerProducer;
 import org.apache.activemq.artemis.core.server.ServerSession;
 import org.apache.activemq.artemis.core.server.impl.ServerProducerImpl;
 import org.apache.activemq.artemis.core.version.Version;
+import org.apache.activemq.artemis.logs.AuditLogger;
 import org.jboss.logging.Logger;
 
 /**
@@ -81,6 +82,11 @@ public class ActiveMQPacketHandler implements ChannelHandler {
    @Override
    public void handlePacket(final Packet packet) {
       byte type = packet.getType();
+
+      if (AuditLogger.isAnyLoggingEnabled()) {
+         AuditLogger.setRemoteAddress(connection.getRemoteAddress());
+         AuditLogger.setCurrentCaller(connection.getAuditSubject());
+      }
 
       switch (type) {
          case PacketImpl.CREATESESSION: {
@@ -164,7 +170,7 @@ public class ActiveMQPacketHandler implements ChannelHandler {
          Map<SimpleString, RoutingType> routingTypeMap = protocolManager.getPrefixes();
 
          CoreSessionCallback sessionCallback = new CoreSessionCallback(request.getName(), protocolManager, channel, connection);
-         ServerSession session = server.createSession(request.getName(), activeMQPrincipal == null ? request.getUsername() : activeMQPrincipal.getUserName(), activeMQPrincipal == null ? request.getPassword() : activeMQPrincipal.getPassword(), request.getMinLargeMessageSize(), connection, request.isAutoCommitSends(), request.isAutoCommitAcks(), request.isPreAcknowledge(), request.isXA(), request.getDefaultAddress(), sessionCallback, true, sessionOperationContext, routingTypeMap);
+         ServerSession session = server.createSession(request.getName(), activeMQPrincipal == null ? request.getUsername() : activeMQPrincipal.getUserName(), activeMQPrincipal == null ? request.getPassword() : activeMQPrincipal.getPassword(), request.getMinLargeMessageSize(), connection, request.isAutoCommitSends(), request.isAutoCommitAcks(), request.isPreAcknowledge(), request.isXA(), request.getDefaultAddress(), sessionCallback, true, sessionOperationContext, routingTypeMap, protocolManager.getSecurityDomain());
          ServerProducer serverProducer = new ServerProducerImpl(session.getName(), "CORE", request.getDefaultAddress());
          session.addProducer(serverProducer);
          ServerSessionPacketHandler handler = new ServerSessionPacketHandler(server, protocolManager, session, server.getStorageManager(), channel);
