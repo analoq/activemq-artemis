@@ -12,6 +12,91 @@ import org.junit.Test;
 
 public class SchedTTLTest extends MessageTestBase
 {
+	private static final Logger log = Logger.getLogger(SchedTTLTest.class);
+
+	@Test
+	public void testWithId() throws Exception
+	{
+		// create queue
+		QueueDeployment deployment = new QueueDeployment();
+		deployment.setConsumerSessionTimeoutSeconds(1);
+		deployment.setDuplicatesAllowed(false);
+		deployment.setDurableSend(true);
+		deployment.setName("testWithId");
+		
+		manager.getQueueManager().deploy(deployment);
+		manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
+
+		// get create and pull link
+		ClientRequest request = new ClientRequest(generateURL("/queues/testWithId"));
+		ClientResponse<?> res = Util.head(request);
+		log.warn("HELLO THERE!!!!");
+		log.warn(res.toString());
+
+		Link create = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "create-with-id");
+		Link pull = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "pull-consumers");
+        res = Util.setAutoAck(pull, true);
+        Link consumeNext = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
+
+		// create message
+        create.setHref(create.getHref().replace("{id}", "a-special-id"));
+        res = create.request().body("text/plain", "sooperdooper").post();
+        res.releaseConnection();
+        Assert.assertEquals(201, res.getStatus());
+        
+		// call pull link
+        res = consumeNext.request().body("text/plain", "").post();
+        consumeNext = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
+        res.releaseConnection();
+        // make sure there's a message on the queue!
+        Assert.assertEquals(200, res.getStatus());
+
+        // create dup message
+        res = create.request().body("text/plain", "sooperdooper").put();
+        res.releaseConnection();
+        Assert.assertEquals(201, res.getStatus());
+
+        // call pull link
+        res = consumeNext.request().body("text/plain", "").post();
+        res.releaseConnection();
+        // make sure there's NO message on the queue!
+        Assert.assertEquals(503, res.getStatus());
+	}
+	
+	@Test
+	public void testPriority() throws Exception
+	{
+		// create queue
+		QueueDeployment deployment = new QueueDeployment();
+		deployment.setConsumerSessionTimeoutSeconds(1);
+		deployment.setDuplicatesAllowed(true);
+		deployment.setDurableSend(false);
+		deployment.setName("testPriority");
+		
+		manager.getQueueManager().deploy(deployment);
+		manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
+
+		// get create and pull link
+		ClientRequest request = new ClientRequest(generateURL("/queues/testPriority"));
+		ClientResponse<?> res = Util.head(request);
+
+		Link create = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "create");
+		Link pull = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "pull-consumers");
+        res = Util.setAutoAck(pull, false);
+        Link ackNext = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "acknowledge-next");
+
+		// create message
+        res = create.request().queryParameter("priority", "9").body("text/plain", "sooperdooper").post();
+        res.releaseConnection();
+        Assert.assertEquals(201, res.getStatus());
+        
+		// call pull link
+        res = ackNext.request().body("text/plain", "").post();
+        res.releaseConnection();
+        // make sure there's a message on the queue!
+        Assert.assertEquals(200, res.getStatus());
+	}
+	
 	@Test
 	public void testIdle() throws Exception
 	{
