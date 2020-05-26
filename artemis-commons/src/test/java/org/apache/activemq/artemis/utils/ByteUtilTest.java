@@ -23,16 +23,33 @@ import java.util.Arrays;
 import io.netty.util.internal.PlatformDependent;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
+import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
+import org.apache.activemq.artemis.api.core.ActiveMQBuffers;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 public class ByteUtilTest {
 
    private static Logger log = Logger.getLogger(ByteUtilTest.class);
 
+   @Test
+   public void testReadLine()
+   {
+	   byte[] byteArray = new byte[]{0,'h',0,'e',0,'l',0,'l',0,'o',0,'\n',
+			                         0,'w',0,'o',0,'r',0,'l',0,'d',0,'\n'};
+	   ActiveMQBuffer spy_buffer = spy(ActiveMQBuffers.wrappedBuffer(byteArray));
+
+	   assertEquals(ByteUtil.readLine(spy_buffer), "hello");
+	   verify(spy_buffer, times(6)).readChar();
+
+	   assertEquals(ByteUtil.readLine(spy_buffer), "world");
+	   verify(spy_buffer, times(12)).readChar();
+   }
+   
    @Test
    public void testBytesToString() {
       byte[] byteArray = new byte[]{0, 1, 2, 3};
