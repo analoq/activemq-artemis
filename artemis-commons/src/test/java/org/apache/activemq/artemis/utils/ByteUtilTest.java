@@ -32,6 +32,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 public class ByteUtilTest {
 
