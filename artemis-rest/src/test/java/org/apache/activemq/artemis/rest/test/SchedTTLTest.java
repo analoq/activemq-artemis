@@ -60,7 +60,7 @@ public class SchedTTLTest extends MessageTestBase {
       // make sure there's NO message on the queue!
       Assert.assertEquals(503, res.getStatus());
    }
-   
+
    @Test
    public void testPriority() throws Exception {
       // create queue
@@ -93,7 +93,7 @@ public class SchedTTLTest extends MessageTestBase {
       // make sure there's a message on the queue!
       Assert.assertEquals(200, res.getStatus());
    }
-   
+
    @Test
    public void testIdle() throws Exception {
       // create queue
@@ -118,7 +118,7 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure queue is empty!
       Assert.assertEquals(503, res.getStatus());
-    }
+   }
 
    @Test
    public void testEnqueued() throws Exception {
@@ -232,7 +232,7 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure there's a message on the queue!
       Assert.assertEquals(200, res.getStatus());
-	}
+   }
 
    @Test
    public void testACK() throws Exception {
@@ -278,5 +278,5 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure there's NO message on the queue!
       Assert.assertEquals(503, res.getStatus());
-	}
+   }
 }
