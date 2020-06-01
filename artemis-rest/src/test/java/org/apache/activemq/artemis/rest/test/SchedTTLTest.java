@@ -11,10 +11,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class SchedTTLTest extends MessageTestBase {
-	private static final Logger log = Logger.getLogger(SchedTTLTest.class);
+   private static final Logger log = Logger.getLogger(SchedTTLTest.class);
 
-	@Test
-	public void testWithId() throws Exception {
+   @Test
+   public void testWithId() throws Exception {
       // create queue
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
@@ -59,10 +59,10 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure there's NO message on the queue!
       Assert.assertEquals(503, res.getStatus());
-	}
-	
-	@Test
-	public void testPriority() throws Exception {
+   }
+   
+   @Test
+   public void testPriority() throws Exception {
       // create queue
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
@@ -92,36 +92,36 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure there's a message on the queue!
       Assert.assertEquals(200, res.getStatus());
-	}
-	
-	@Test
-	public void testIdle() throws Exception {
-		// create queue
-		QueueDeployment deployment = new QueueDeployment();
-		deployment.setConsumerSessionTimeoutSeconds(1);
-		deployment.setDuplicatesAllowed(true);
-		deployment.setDurableSend(false);
-		deployment.setName("testIdle");
-		
-		manager.getQueueManager().deploy(deployment);
-		manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
+   }
+   
+   @Test
+   public void testIdle() throws Exception {
+      // create queue
+      QueueDeployment deployment = new QueueDeployment();
+      deployment.setConsumerSessionTimeoutSeconds(1);
+      deployment.setDuplicatesAllowed(true);
+      deployment.setDurableSend(false);
+      deployment.setName("testIdle");
 
-		// get pull link
-		ClientRequest request = new ClientRequest(generateURL("/queues/testIdle"));
-		ClientResponse<?> res = Util.head(request);
-		Link pull = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "pull-consumers");
+      manager.getQueueManager().deploy(deployment);
+      manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
+
+      // get pull link
+      ClientRequest request = new ClientRequest(generateURL("/queues/testIdle"));
+      ClientResponse<?> res = Util.head(request);
+      Link pull = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "pull-consumers");
       res = Util.setAutoAck(pull, false);
       Link ackNext = getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "acknowledge-next");
 
-		// call pull link
+      // call pull link
       res = ackNext.request().body("text/plain", "").post();
       res.releaseConnection();
       // make sure queue is empty!
       Assert.assertEquals(503, res.getStatus());
     }
 
-	@Test
-	public void testEnqueued() throws Exception {
+   @Test
+   public void testEnqueued() throws Exception {
       // create queue
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
@@ -151,10 +151,10 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure there's a message on the queue!
       Assert.assertEquals(200, res.getStatus());
-	}
+   }
 
-	@Test
-	public void testExpired() throws Exception {
+   @Test
+   public void testExpired() throws Exception {
       // create queue
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
@@ -186,10 +186,10 @@ public class SchedTTLTest extends MessageTestBase {
       res.releaseConnection();
       // make sure there's NO message on the queue!
       Assert.assertEquals(503, res.getStatus());
-	}
-	
-	@Test
-	public void testNACK() throws Exception {
+   }
+
+   @Test
+   public void testNACK() throws Exception {
       // create queue
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
@@ -234,8 +234,8 @@ public class SchedTTLTest extends MessageTestBase {
       Assert.assertEquals(200, res.getStatus());
 	}
 
-	@Test
-	public void testACK() throws Exception {
+   @Test
+   public void testACK() throws Exception {
       // create queue
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
