@@ -40,7 +40,7 @@ public class ByteUtilTest {
    @Test
    public void testReadLine() {
       byte[] byteArray = new byte[]{0,'h',0,'e',0,'l',0,'l',0,'o',0,'\n',
-                                   0,'w',0,'o',0,'r',0,'l',0,'d',0,'\n'};
+                                    0,'w',0,'o',0,'r',0,'l',0,'d',0,'\n'};
       ActiveMQBuffer spy_buffer = spy(ActiveMQBuffers.wrappedBuffer(byteArray));
 
       assertEquals(ByteUtil.readLine(spy_buffer), "hello");

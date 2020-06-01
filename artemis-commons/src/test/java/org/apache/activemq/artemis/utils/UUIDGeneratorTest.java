@@ -17,7 +17,7 @@ public class UUIDGeneratorTest {
       assertEquals(result[0] & (byte) 0x01, (byte)0x01);
       // check seed value
       byte[] compare = new byte[] {(byte)97,(byte)-76,(byte)32,
-                                  (byte)-69,(byte)56,(byte)81};
+                                   (byte)-69,(byte)56,(byte)81};
       assertArrayEquals(result, compare);
    }
 }
