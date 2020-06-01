@@ -1,8 +1,6 @@
 package org.apache.activemq.artemis.utils;
 
 import java.util.Random;
-import java.security.SecureRandom;
-import org.junit.Assert;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -10,8 +8,7 @@ import org.junit.Test;
 public class UUIDGeneratorTest
 {
    @Test
-   public void testGenerateDummyAddress()
-   {
+   public void testGenerateDummyAddress() {
       byte[] seed = new byte[]{0};
       Random rnd = new Random(0);
       UUIDGenerator generator = UUIDGenerator.getInstance();

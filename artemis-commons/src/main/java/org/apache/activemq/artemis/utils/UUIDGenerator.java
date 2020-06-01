@@ -114,18 +114,18 @@ public final class UUIDGenerator {
    }
 
    public byte[] generateDummyAddress(Random rnd) {
-	      byte[] dummy = new byte[6];
-	      rnd.nextBytes(dummy);
-	      /* Need to set the broadcast bit to indicate it's not a real
-	       * address.
-	       */
-	      dummy[0] |= (byte) 0x01;
+      byte[] dummy = new byte[6];
+      rnd.nextBytes(dummy);
+      /* Need to set the broadcast bit to indicate it's not a real
+       * address.
+       */
+      dummy[0] |= (byte) 0x01;
 
-	      if (ActiveMQUtilLogger.LOGGER.isDebugEnabled()) {
-	         ActiveMQUtilLogger.LOGGER.debug("using dummy address " + UUIDGenerator.asString(dummy));
-	      }
-	      return dummy;
-	   }
+      if (ActiveMQUtilLogger.LOGGER.isDebugEnabled()) {
+         ActiveMQUtilLogger.LOGGER.debug("using dummy address " + UUIDGenerator.asString(dummy));
+      }
+      return dummy;
+   }
 
    public byte[] generateDummyAddress() {
       Random rnd = getRandomNumberGenerator();
